@@ -1,4 +1,41 @@
 baseURL: "https://hzjian123.github.io/Blog/"
 languageCode: en-us
-title: My New Hugo Site
+title: Eachann's Blog
 theme: PaperMod
+
+enableEmoji: true
+
+params:
+  author: Zijian HE
+  homeInfoParams:
+    Title: "The Blog"
+    Content: >
+      Welcome to the blog with **sharings & thoughts** 🎉
+      
+      - This is a space where I will mostly be sharing about tech and travels 🙂
+
+  socialIcons:
+    - name: Github
+      url: "https://github.com/hzjian123"
+    - name: Instagram
+      url: "https://www.instagram.com/eachannn/"
+    - name: 小红书
+      url: "https://www.xiaohongshu.com/user/profile/60541d72000000000101ffc8"
+
+  ShowReadingTime: true
+  ShowShareButtons: true
+
+menu:
+  main:
+    - identifier: categories
+      name: Categories
+      url: /categories/
+      weight: 10
+    - identifier: tags
+      name: Tags
+      url: /tags/
+      weight: 20
+    - identifier: archives
+      name: Archives
+      url: /archives/
+      weight: 30
