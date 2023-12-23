@@ -6,14 +6,21 @@
     <description>Recent content in Docs on Eachann&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 23 Dec 2023 14:12:05 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 23 Dec 2023 19:09:04 +0800</lastBuildDate>
     <atom:link href="https://hzjian123.github.io/Blog/docs/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Autonomous Driving</title>
-      <link>https://hzjian123.github.io/Blog/docs/test/</link>
+      <title>Diffusion Model</title>
+      <link>https://hzjian123.github.io/Blog/docs/diffusion/</link>
+      <pubDate>Sat, 23 Dec 2023 19:09:04 +0800</pubDate>
+      <guid>https://hzjian123.github.io/Blog/docs/diffusion/</guid>
+      <description>Diffusion Model Explain Likelihood Maximization </description>
+    </item>
+    <item>
+      <title>Autonomous Driving Review</title>
+      <link>https://hzjian123.github.io/Blog/docs/ads/</link>
       <pubDate>Sat, 23 Dec 2023 14:12:05 +0800</pubDate>
-      <guid>https://hzjian123.github.io/Blog/docs/test/</guid>
-      <description>Autonomous Driving Review Introduction Automated Driving Systems (ADSs) aims to prevent traffic accidents and mitigate congestion 1. ADS is empowered by recent development of Deep Learning and sensor modalities (such as lidar).DARPA Grand Challenge is the first major competition in this field where human interation is prohibited. However the environment is relatively simple.
+      <guid>https://hzjian123.github.io/Blog/docs/ads/</guid>
+      <description>Introduction Automated Driving Systems (ADSs) aims to prevent traffic accidents and mitigate congestion 1. ADS is empowered by recent development of Deep Learning and sensor modalities (such as lidar).DARPA Grand Challenge is the first major competition in this field where human interation is prohibited. However the environment is relatively simple.
 Society of Automotive Engineers (SAE) defined five levels of driving automation from L0 to L5. L1 include simple tasks such as adaptive cruise control.</description>
     </item>
   </channel>
