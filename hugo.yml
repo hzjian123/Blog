@@ -7,6 +7,7 @@ enableEmoji: true
 
 params:
   author: Zijian HE
+  math: true
   homeInfoParams:
     Title: "The Blog"
     Content: >
