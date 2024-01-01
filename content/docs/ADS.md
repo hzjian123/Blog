@@ -92,7 +92,40 @@ Firstly we need to decide the drivable area. Then divide them into lanes include
 Road detection usually start with correction and filtering and find the road location. Then we separate roads & lanes by lane markings. Model fitting is performed next with geometric shapes so a continued lane is defined. Temporal integration is used next with info from vehicle dynamics.
 # Assessment
 ## Risk Assessment
-Bayesian method is used to quantify and measure uncertainties of deep neural networks, get risk of the whole system. Or we can assess the overall risk level of the driving scene separately
+Bayesian method is used to quantify and measure uncertainties of deep neural networks, get risk of the whole system. Or we can assess the overall risk level of the driving scene separately (by HMM)
+## Surrounding Driver Assessment
+The target vehicle’s future behavior can be predicted with a hidden Markov model (HMM). Bayesian network classifier is also used to predict driver actions. The main challenges are the short observation window for understanding the intention of humans and real-time high frequency computation requirements.
+## Driving stye recognition
+Understand other's driving style is crucial to prevent accidents. Classify in terms of aggressiveness or fuel consumption. GMM based driver model was used to identify individual drivers. 
+# Planning and Decision Making
+Planning can be divided into: global route planning and local path planning.
+## Global Planning
+Finding the route on the road network from origin to the final destination, achieved by GPS + offline map. Conventional methods include: goal-directed, separator-based, hierarchical and bounded-hop techniques
+## Local Planning
+Motion planning aim to avoid collisions and satisfy optimization criteria in the configuration space (C-space), it is divided into four groups; graph-based planners, sampling-based planners, interpolating curve planners,  numerical optimization and DL based approaches.
+
+**Graph-based** Output discrete paths rather than continuous ones. State lattice algorithm is more advanced, it discretize space with high dimension lattice nodes and then calculate paths.
+
+**Sampling Based Planning** (SBP) tries to build the connectivity of the C-space by randomly sampling paths in it. It has same disadvantage as graph-based method of jerky trajectories.
+
+**Interpolating curve planners** fit a curve to a set of points. Need new curve fitting when deviate from original path. Smooth trajectory but higher computational load.
+**DL and RL based method** Fully convolutional 3D neural networks can generate future paths from sensory input such as lidar point clouds. Simulation environment is useful for occluded scene and achieved by using deep reinforcement learning. This category is not used on roads because of safety issue.
+# Human Machine Interaction
+Major challenge in HMI is the mutual understanding of users and ADS.
+# Datasets and Tools
+## Datasets and Benchmarks
+**KITTI**Most popular, datasets and benchmarks.
+
+**ApolloScape Dataset** Perception + navigation + control. 100K frames + 80K lidar cloud + 1000km trajectories.
+**Berkeley DeepDrive Dataset** 100,000 annotated videos and 10 tasks. More than 1000 hours of driving experience with more than 100 million frames
+
+**Waymo Open Dataset**
+1000 types of different segments where each segment captures 20 seconds of continuous driving
+
+**CityScapes Dataset**
+Focused on the semantic understanding of urban street scenes. Semantic, instance-wise, and dense pixel annotations for 30 classes grouped into 8 categories. Include 5,000 fine + 20,000 coarse images. 
+## Frameworks
+Autoware, Apollo, Nvidia DriveWorks and openpilot.
 # References
 [^1]: A Survey of Autonomous Driving: Common Practices and Emerging Technologies
 [^2]: https://thegradient.pub/beyond-the-pixel-plane-sensing-and-learning-in-3d/
