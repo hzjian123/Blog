@@ -24,3 +24,24 @@ Above term is called **Evidence Lower Bound (ELBO)** ELBO is the lower bound bec
 ## Variational Autoencoder (VAE)
 Variational method is the approximation of distribution with some parameters, by introducing autoencoder structure, we come up with VAE. Let's derive ELBO further. Firstly split joint distribution by introducing another model $\theta$ to approximate real distribution.
 $$E_{q_\phi (z|x)}[log\frac{p(x,z)}{q_\phi (z|x)}]=E_{q_\phi (z|x)}[log\frac{p_\theta(x|z)p(z)}{q_\phi (z|x)}]$$
+By spliting expectation and define KL,
+$$=E_{q_\phi (z|x)}[logp_\theta(x|z)]-D_{KL}(q_\phi (z|x)||p(z))$$
+We define **decoder** and **encoder** respectively. Decoder aims to reconstruct input $x$ while encoder tries to match posterior with prior distribution. Ususally we define encoder as a multivariate Gaussian so KL can be estimated by MC sampling. Since latent $z$ is sampled from encoder, we use **reparameterization trick** to makes it differentiable.
+$$z=\mu_\phi(x)+\sigma_\phi(x)\odot\epsilon$$
+Where $\epsilon$ is a standard Gaussian $N$. During training, VAE tries to reconstruct the input $x$. During inference, we discard encoder and sample latent from the learnt $\mu_\phi$ and $\sigma_\phi$.
+## Hierarchical VAE and Variational Diffusion Models
+Hierarchical VAE (HVAE) is formed by series of VAE models, as we could construt the higher-level abstract latent for more complex task. We can also assign Markov property to get MHVAE. Also We can assign 3 properties to MHVAE so we can now call it Variational Diffusion Models(VDM). 
+
+**(1)** Latent dimension equal to data dimension
+
+**(2)** Encoder of latent layers is fixed (linear Gaussian that centers at previpus timestamp)
+
+**(3)** Change encoder params so at step T image becomes a standard Gaussian.
+Define the **noise schedule** that control noise at each timestep
+$$\alpha_t+\beta_t=1$$
+Define forward/encoder and reverse/decoder process
+$$q(x_t|x_{t-1}) = N(x_t;\sqrt{\alpha_t}x_{t-1},(1-\alpha_t)I)$$
+$$q(x_{1:T}|x_{0})=\prod_{t=1}^{T}q(x_t|x_{t-1})$$
+$$p_\theta(x_{t-1}|x_{t}) = N(x_{t-1};\mu_\theta(x_t,t),\Sigma_\theta(x_t,t))$$
+$$p_\theta(x_{0:T})=p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}|x_{t})$$
+Notice in reverse process we use the network to approximate the real mean and covariance.
