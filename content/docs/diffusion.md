@@ -44,4 +44,16 @@ $$q(x_t|x_{t-1}) = N(x_t;\sqrt{\alpha_t}x_{t-1},(1-\alpha_t)I)$$
 $$q(x_{1:T}|x_{0})=\prod_{t=1}^{T}q(x_t|x_{t-1})$$
 $$p_\theta(x_{t-1}|x_{t}) = N(x_{t-1};\mu_\theta(x_t,t),\Sigma_\theta(x_t,t))$$
 $$p_\theta(x_{0:T})=p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}|x_{t})$$
-Notice in reverse process we use the network to approximate the real mean and covariance.
+Notice in reverse process we use the network to approximate the real mean and covariance. We could generate new samples from the Gaussian noise and run denoising transision T times. Similar to VAE we could optimzie by ELBO.
+$$log p(x)=log\int p(x_{0:T})dx_{1:T}$$
+Multiply with $q(x_{1:T}|x_0)$ (introduce q)and define expectation. Use Jensen Inequality.
+$$=log E_{q(x_{1:T}|x_0)}[\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
+$$\eqslantgtr E_{q(x_{1:T}|x_0)}[log\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
+We get **ELBO** term again! After derivation it becomes several expectations and we can appy Monte Carlo estimates. However for each time step it involves $x_{t-1},x_{t+1}$ and we need to sum all $T-1$ terms so it cause high variance! How can we involve less variables? Firstly according to Markov property we have the form $q(x_{t}|x_{t-1})=q(x_{t}|x_{t-1},x_0)$, then by Bayes Rule,
+$$q(x_{x}|x_{x-1},x_0) = \frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}$$
+Derive from the above ELBO we get,
+$$log p(x)\eqslantgtr E_{q(x_{1:T}|x_0)}[log\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
+Expand $p,q$
+$$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}q(x_{t}|x_{t-1})}]$$
+Use above substitution for $q(x_{t}|x_{t-1})$ we get,
+$$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
