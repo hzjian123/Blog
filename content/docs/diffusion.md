@@ -57,3 +57,4 @@ Expand $p,q$
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}q(x_{t}|x_{t-1})}]$$
 Use above substitution for $q(x_{t}|x_{t-1})$ we get,
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
+2
