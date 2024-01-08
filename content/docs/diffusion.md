@@ -50,11 +50,29 @@ Multiply with $q(x_{1:T}|x_0)$ (introduce q)and define expectation. Use Jensen I
 $$=log E_{q(x_{1:T}|x_0)}[\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
 $$\eqslantgtr E_{q(x_{1:T}|x_0)}[log\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
 We get **ELBO** term again! After derivation it becomes several expectations and we can appy Monte Carlo estimates. However for each time step it involves $x_{t-1},x_{t+1}$ and we need to sum all $T-1$ terms so it cause high variance! How can we involve less variables? Firstly according to Markov property we have the form $q(x_{t}|x_{t-1})=q(x_{t}|x_{t-1},x_0)$, then by Bayes Rule,
-$$q(x_{x}|x_{x-1},x_0) = \frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}$$
+$$q(x_{t}|x_{t-1},x_0) = \frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}$$
 Derive from the above ELBO we get,
 $$log p(x)\eqslantgtr E_{q(x_{1:T}|x_0)}[log\frac{p(x_{0:T})}{q(x_{1:T}|x_0)}]$$
 Expand $p,q$
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}q(x_{t}|x_{t-1})}]$$
 Use above substitution for $q(x_{t}|x_{t-1})$ we get,
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
-2
+$$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{1}|x_0)}+log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_{t})}{\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
+$q(x_{t-1}|x_0),q(x_{t}|x_0)$ terms cancel each others and remain
+$$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{1}|x_0)}+log\frac{q(x_{1}|x_0)}{q(x_{T}|x_0)}+log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)}]$$
+Change products to sums, split and redefine range of expectations.
+$$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{T}|x_0)}+\sum_{t=2}^{T}log\frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)}]$$
+$$=E_{q(x_{1}|x_0)}[log p_\theta(x_{0}|x_{1})]+E_{q(x_{T}|x_0)}[log\frac{p(x_{T})}{q(x_{T}|x_0)}]+\sum_{t=2}^{T}E_{q(x_{t},x_{t-1}|x_0)}[log\frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)}]$$
+$$=E_{q(x_{1}|x_0)}[log p_\theta(x_{0}|x_{1})]-D_{KL}(q(x_{T}|x_0)||p(x_{T}))-\sum_{t=2}^{T}E_{q(x_{t}|x_0)}[D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))]$$
+Notice we have less variables so lower variance for ELBO estimation. We can divide ELBO into 3 terms:
+
+**Reconstruction term** Similar as VAE decoder, use Monte Carlo estimate.
+
+**Prior matching term** Difference between input at the final step and standrad Gaussian, equal to 0.
+
+**Denoising matching term** Estimate the ground truth denosing step at $t-1$ with a model. This is the major term we need to optimize. But how?
+
+We further derive this term to makes it tractable by expression of Gaussian distribution. Notice **encoder $q$** looks tough to deal with so we firstly apply Bayes rule:
+$$q(x_{t-1}|x_{t},x_0) = \frac{q(x_{t-1}|x_0)q(x_{t}|x_{t-1},x_0)}{q(x_{t}|x_0)}$$
+Let's dive into these 3 terms individually. According to Markov property we have the form $q(x_{t}|x_{t-1})=q(x_{t}|x_{t-1},x_0)$ which has the closed form expression. We are left with $q(x_t|x_0)$ and $q(x_{t−1}|x_0)$. Since encoder are linear Gaussian models, we can derive recursively. Firstly, apply **reparameterization trick** again to one forward step:
+$$x_t=\sqrt{\alpha_t}x_{t-1}+\sqrt{1-\alpha_{t}}\epsilon$$
