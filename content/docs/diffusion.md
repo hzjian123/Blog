@@ -58,7 +58,7 @@ $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\th
 Use above substitution for $q(x_{t}|x_{t-1})$ we get,
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})\prod_{t=2}^{T}p_\theta(x_{t-1}|x_{t})}{q(x_{1}|x_0)\prod_{t=2}^{T}\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{1}|x_0)}+log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_{t})}{\frac{q(x_{t}|x_0)q(x_{t-1}|x_{t},x_0)}{q(x_{t-1}|x_0)}}]$$
-$q(x_{t-1}|x_0),q(x_{t}|x_0)$ terms cancel each others and remain
+$q(x_{t-1}|x_0),q(x_{t}|x_0)$ terms cancel each others and few remain
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{1}|x_0)}+log\frac{q(x_{1}|x_0)}{q(x_{T}|x_0)}+log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)}]$$
 Change products to sums, split and redefine range of expectations.
 $$=E_{q(x_{1:T}|x_0)}[log\frac{p(x_{T})p_\theta(x_{0}|x_{1})}{q(x_{T}|x_0)}+\sum_{t=2}^{T}log\frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)}]$$
@@ -74,5 +74,42 @@ Notice we have less variables so lower variance for ELBO estimation. We can divi
 
 We further derive this term to makes it tractable by expression of Gaussian distribution. Notice **encoder $q$** looks tough to deal with so we firstly apply Bayes rule:
 $$q(x_{t-1}|x_{t},x_0) = \frac{q(x_{t-1}|x_0)q(x_{t}|x_{t-1},x_0)}{q(x_{t}|x_0)}$$
-Let's dive into these 3 terms individually. According to Markov property we have the form $q(x_{t}|x_{t-1})=q(x_{t}|x_{t-1},x_0)$ which has the closed form expression. We are left with $q(x_t|x_0)$ and $q(x_{t−1}|x_0)$. Since encoder are linear Gaussian models, we can derive recursively. Firstly, apply **reparameterization trick** again to one forward step:
-$$x_t=\sqrt{\alpha_t}x_{t-1}+\sqrt{1-\alpha_{t}}\epsilon$$
+Let's dive into these 3 terms individually. According to Markov property we have the form $q(x_{t}|x_{t-1})=q(x_{t}|x_{t-1},x_0)$ which has the closed form expression. We are left with $q(x_t|x_0)$ and $q(x_{t−1}|x_0)$. Since encoder are linear Gaussian models, we can derive recursively. Firstly, apply **reparameterization trick** again to one forward step, assume each noise is iid.
+$$x_t=\sqrt{\alpha_t}x_{t-1}+\sqrt{1-\alpha_{t}}\epsilon_{t-1}$$
+$$x_t=\sqrt{\alpha_t}(\sqrt{\alpha_{t-1}}x_{t-2}+\sqrt{1-\alpha_{t-1}}\epsilon_{t-2})+\sqrt{1-\alpha_{t}}\epsilon_{t-1}$$
+$$x_t=\sqrt{\alpha_t \alpha_{t-1}}x_{t-2}+\sqrt{\alpha_t-\alpha_t \alpha_{t-1}}\epsilon_{t-2}+\sqrt{1-\alpha_{t}}\epsilon_{t-1}$$
+Sum of two independent Gaussians equal to a Gaussian with mean = sum of means and variance = sum of variances.
+$$x_t=\sqrt{\alpha_t \alpha_{t-1}}x_{t-2}+\sqrt{\alpha_t-\alpha_t \alpha_{t-1}+1-\alpha_{t}}\epsilon_{t-2}$$
+$$x_t=\sqrt{\alpha_t \alpha_{t-1}}x_{t-2}+\sqrt{1-\alpha_t \alpha_{t-1}}\epsilon_{t-2}$$$$...$$
+$$x_t=\sqrt{\prod_{i=1}^t\alpha_i}x_{0}+\sqrt{1-\prod_{i=1}^t\alpha_{i}}\epsilon_{0}$$
+$$x_t=\sqrt{\overline{\alpha_i}}x_{0}+\sqrt{1-\overline{\alpha_{i}}}\epsilon_{0}$$
+We get the closed form of $q(x_t|x_0)$ and $q(x_{t−1}|x_0)$. Recall the Bayes rule expansion derived above.
+$$q(x_{t-1}|x_{t},x_0) = \frac{q(x_{t}|x_{t-1},x_0)q(x_{t-1}|x_0)}{q(x_{t}|x_0)}$$
+$$=\frac{N(x_t;\sqrt{\alpha_t}x_{t-1},(1-\alpha_t)I)N(x_{t-1};\sqrt{\overline{\alpha_{t-1}}}x_{0},(1-{\overline{\alpha_{t-1}}})I)}{N(x_t;\sqrt{\alpha_t}x_{0},(1-\overline{\alpha_t})I)}$$
+$$\propto exp\lbrace-\frac{1}{2}[\frac{(x_t-\sqrt{\alpha_t}x_{t-1})^2}{1-\alpha_t}+\frac{(x_{t-1}-\sqrt{\overline{\alpha_{t-1}}}x_{0})^2}{1-\overline{\alpha_{t-1}}}-\frac{(x_t-\sqrt{\alpha_t}x_{0})^2}{1-\overline{\alpha_{t}}}]\rbrace$$
+$$=exp\lbrace-\frac{1}{2}[\frac{(x_t-\sqrt{\alpha_t}x_{t-1})^2}{1-\alpha_t}+\frac{(x_{t-1}-\sqrt{\overline{\alpha_{t-1}}}x_{0})^2}{1-\overline{\alpha_{t-1}}}-\frac{(x_t-\sqrt{\alpha_t}x_{0})^2}{1-\overline{\alpha_{t}}}]\rbrace$$
+Separate all terms with only $x_t,x_0,\alpha$ as a constant C (remaining are related with $x_{t-1}$)
+$$=exp\lbrace-\frac{1}{2}[\frac{-2\sqrt{\alpha_t}x_{t}x_{t-1}+\alpha_t x_{t-1}^2}{1-\alpha_t}+\frac{x_{t-1}^2-2\sqrt{\overline{\alpha_{t-1}}}x_{t-1}x_{0}}{1-\overline{\alpha_{t-1}}}+C(x_t,x_0)]\rbrace$$
+$$\propto exp\lbrace-\frac{1}{2}[(\frac{\alpha_t}{1-\alpha_t}+\frac{1}{1-\overline{\alpha_{t-1}}})x_{t-1}^2-2(\frac{\sqrt{\alpha_t}x_{t}}{1-\alpha_t}+\frac{\sqrt{\overline{\alpha_{t-1}}}x_{0}}{1-\overline{\alpha_{t-1}}})x_{t-1}]\rbrace$$
+$$=exp\lbrace-\frac{1}{2}[(\frac{\alpha_t}{1-\alpha_t}+\frac{1}{1-\overline{\alpha_{t-1}}})x_{t-1}^2-2(\frac{\sqrt{\alpha_t}x_{t}}{1-\alpha_t}+\frac{\sqrt{\overline{\alpha_{t-1}}}x_{0}}{1-\overline{\alpha_{t-1}}})x_{t-1}]\rbrace$$
+Use the fact $\overline{\alpha_{t-1}}\alpha_{t}=\overline{\alpha_{t}}$, combine first 2 terms
+$$=exp\lbrace-\frac{1}{2}[(\frac{1-\overline{\alpha_{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})})x_{t-1}^2-2(\frac{\sqrt{\alpha_t}x_{t}}{1-\alpha_t}+\frac{\sqrt{\overline{\alpha_{t-1}}}x_{0}}{1-\overline{\alpha_{t-1}}})x_{t-1}]\rbrace$$
+Extract common factor and work on the second terms.
+$$=exp\lbrace-\frac{1}{2}(\frac{1-\overline{\alpha_{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})})[x_{t-1}^2-2\frac{(\frac{\sqrt{\alpha_t}x_{t}}{1-\alpha_t}+\frac{\sqrt{\overline{\alpha_{t-1}}}x_{0}}{1-\overline{\alpha_{t-1}}})}{\frac{1-\overline{\alpha_{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}}x_{t-1}]\rbrace$$
+$$=exp\lbrace-\frac{1}{2}(\frac{1-\overline{\alpha_{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})})[x_{t-1}^2-2\frac{(\frac{\sqrt{\alpha_t}x_{t}}{1-\alpha_t}+\frac{\sqrt{\overline{\alpha_{t-1}}}x_{0}}{1-\overline{\alpha_{t-1}}})(1-\alpha_t)(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}x_{t-1}]\rbrace$$
+$$=exp\lbrace-\frac{1}{2}(\frac{1-\overline{\alpha_{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})})[x_{t-1}^2-2\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}}x_{t-1}]\rbrace$$
+$$=exp\lbrace-\frac{1}{2}(\frac{1}{\frac{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}})[x_{t-1}^2-2\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}}x_{t-1}]\rbrace$$
+Use the constant term above to complete square.
+$$\propto N(x_{t-1};\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}},\frac{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}I)$$
+$$=N(x_{t-1};\mu_q(x_t,x_0),\Sigma_q(t))$$
+Where mean and variance is
+$$\mu_q(x_t,x_0)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}}$$
+$$\sigma_q^2(t)=\frac{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}$$
+Therefore $q(x_{t-1}|x_{t},x_0)$ itself is actually a Gaussian distribution as well. Notice variance is only related t $\alpha$ which is known. Recall we try to optimzie **denoising matching term** above so now we need to construct estimate term $p_\theta(x_{t-1}|x_{t})$that approximate ground truth $q(x_{t-1}|x_{t},x_0)$. Analogously, we can model it with a Gaussian distribution. Since we can match their **variance** exactly, match 2 distributions equal to match **mean** value. Let's derive from the definition of KL between 2 Gaussians.
+$$\displaystyle\argmin_{\theta} D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2}[log\frac{|\Sigma_q(t)|}{|\Sigma_q(t)|}-d+tr(\Sigma_q(t)^{-1}\Sigma_q(t))+(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2}[log1-d+d+(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2}[(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2}[(\mu_\theta-\mu_q)^T\(\sigma^2_q(t)I)^{-1}(\mu_\theta-\mu_q)]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\mu_\theta-\mu_q)||^2_2]$$
+where $\mu_\theta=\mu_\theta(x_t,t), \mu_q = \mu_q(x_t,x_0)$, these 2 means can be further derived as :
