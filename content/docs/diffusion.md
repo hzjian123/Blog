@@ -1,13 +1,12 @@
 +++
-title = 'Diffusion Model'
+title = 'Diffusion Model Explain'
 date = 2023-12-23T19:09:04+08:00
 draft = false
 tags = ["tech"]
 categories = ["tutorial"]
 math = true
 +++
-# Diffusion Model Explain
-## Likelihood Maximization and ELBO
+# Likelihood Maximization and ELBO
 Assume data is generated from some latent variable $z$. It might include higher-level representations such as color and shape. The goal is to use this latent variable to get new samples. We can introduce a joint probability $p(x,z)$ and try to maximize likelihood of *p(x)* 
 $$p(x)=\int p(x,z)dz$$
 Since integration is intractable, we apply Bayes theorem instead.
@@ -21,7 +20,7 @@ Split expectation and define KL divergence.
 $$=E_{q_\phi (z|x)}[log\frac{p(x,z)}{q_\phi (z|x)}] + D_{KL}(q_\phi (z|x)||p(z|x))$$
 $$\eqslantgtr E_{q_\phi (z|x)}[log\frac{p(x,z)}{q_\phi (z|x)}]$$
 Above term is called **Evidence Lower Bound (ELBO)** ELBO is the lower bound because KL is non-negative so ELBO cannot exceeds evidence. From above a model $q_\phi (z|x)$ is introduced to approximate the true posterior distribution which aligns with our goal to model the latent variable so we aim to minimize this KL term. Since we do not know the true distribution we can minimize KL by maximizing ELBO instead because left hand side likelihood is a constant respect to $\phi$.
-## Variational Autoencoder (VAE)
+# Variational Autoencoder (VAE)
 Variational method is the approximation of distribution with some parameters, by introducing autoencoder structure, we come up with VAE. Let's derive ELBO further. Firstly split joint distribution by introducing another model $\theta$ to approximate real distribution.
 $$E_{q_\phi (z|x)}[log\frac{p(x,z)}{q_\phi (z|x)}]=E_{q_\phi (z|x)}[log\frac{p_\theta(x|z)p(z)}{q_\phi (z|x)}]$$
 By spliting expectation and define KL,
@@ -29,7 +28,7 @@ $$=E_{q_\phi (z|x)}[logp_\theta(x|z)]-D_{KL}(q_\phi (z|x)||p(z))$$
 We define **decoder** and **encoder** respectively. Decoder aims to reconstruct input $x$ while encoder tries to match posterior with prior distribution. Ususally we define encoder as a multivariate Gaussian so KL can be estimated by MC sampling. Since latent $z$ is sampled from encoder, we use **reparameterization trick** to makes it differentiable.
 $$z=\mu_\phi(x)+\sigma_\phi(x)\odot\epsilon$$
 Where $\epsilon$ is a standard Gaussian $N$. During training, VAE tries to reconstruct the input $x$. During inference, we discard encoder and sample latent from the learnt $\mu_\phi$ and $\sigma_\phi$.
-## Hierarchical VAE and Variational Diffusion Models
+# Hierarchical VAE and Variational Diffusion Models
 Hierarchical VAE (HVAE) is formed by series of VAE models, as we could construt the higher-level abstract latent for more complex task. We can also assign Markov property to get MHVAE. Also We can assign 3 properties to MHVAE so we can now call it Variational Diffusion Models(VDM). 
 
 **(1)** Latent dimension equal to data dimension
@@ -105,11 +104,88 @@ $$=N(x_{t-1};\mu_q(x_t,x_0),\Sigma_q(t))$$
 Where mean and variance is
 $$\mu_q(x_t,x_0)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}}$$
 $$\sigma_q^2(t)=\frac{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}$$
-Therefore $q(x_{t-1}|x_{t},x_0)$ itself is actually a Gaussian distribution as well. Notice variance is only related t $\alpha$ which is known. Recall we try to optimzie **denoising matching term** above so now we need to construct estimate term $p_\theta(x_{t-1}|x_{t})$that approximate ground truth $q(x_{t-1}|x_{t},x_0)$. Analogously, we can model it with a Gaussian distribution. Since we can match their **variance** exactly, match 2 distributions equal to match **mean** value. Let's derive from the definition of KL between 2 Gaussians.
+Therefore $q(x_{t-1}|x_{t},x_0)$ itself is actually a Gaussian distribution as well. Notice variance is only related t $\alpha$ which is known. Recall we try to optimize **denoising matching term** above so now we need to construct estimate term $p_\theta(x_{t-1}|x_{t})$that approximate ground truth $q(x_{t-1}|x_{t},x_0)$. Analogously, we can model it with a Gaussian distribution. Since we can match their **variance** exactly, match 2 distributions equal to match **mean** value. Let's derive from the definition of KL between 2 Gaussians.
 $$\displaystyle\argmin_{\theta} D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))$$
 $$=\displaystyle\argmin_{\theta}\frac{1}{2}[log\frac{|\Sigma_q(t)|}{|\Sigma_q(t)|}-d+tr(\Sigma_q(t)^{-1}\Sigma_q(t))+(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
 $$=\displaystyle\argmin_{\theta}\frac{1}{2}[log1-d+d+(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
 $$=\displaystyle\argmin_{\theta}\frac{1}{2}[(\mu_\theta-\mu_q)^T\Sigma_q(t)^{-1}(\mu_\theta-\mu_q)]$$
 $$=\displaystyle\argmin_{\theta}\frac{1}{2}[(\mu_\theta-\mu_q)^T\(\sigma^2_q(t)I)^{-1}(\mu_\theta-\mu_q)]$$
 $$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\mu_\theta-\mu_q)||^2_2]$$
-where $\mu_\theta=\mu_\theta(x_t,t), \mu_q = \mu_q(x_t,x_0)$, these 2 means can be further derived as :
+where $\mu_\theta=\mu_\theta(x_t,t), \mu_q = \mu_q(x_t,x_0)$, estimated mean can be further derived according to the true mean above :
+$$\mu_\theta(x_t,t)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})\hat{x_{\theta}}(x_t,t)}{1-\overline{\alpha_{t}}}$$
+Notice we use a network $\hat{x_{\theta}}(x_t,t)$ to predict $x_0$ so above optimization can be written as:
+$$\displaystyle\argmin_{\theta} D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\mu_\theta-\mu_q)||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})\hat{x_{\theta}}(x_t,t)}{1-\overline{\alpha_{t}}}-\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}})||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\frac{\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})}{1-\overline{\alpha_{t}}})(\hat{x_{\theta}}(x_t,t)-x_0)||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}\frac{\overline{\alpha_{t-1}}(1-\alpha_{t})^2}{(1-\overline{\alpha_{t}})^2}||(\hat{x_{\theta}}(x_t,t)-x_0)||^2_2$$
+Now we simplify the objective to predict the original image from a noisy version. Since we need to optimize summation over all time steps, it is equivalent to take expectation over time.
+## Three Equivalent Interpretations
+### Noise prediction & DDPM
+There are  two other equivalent parameterizations other than predict original image $x_0$. What if we replace $x_0$ in above equations? Firstly let's reuse reparameterization trick.
+$$x_t=\sqrt{\overline{\alpha_t}}x_{0}+\sqrt{1-\overline{\alpha_{t}}}\epsilon_{0}$$
+$$x_0=\frac{x_t-\sqrt{1-\overline{\alpha_{t}}}\epsilon_{0}}{\sqrt{\overline{\alpha_t}}}$$
+Plug into true denoising transition mean:
+$$\mu_q(x_t,x_0)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})\frac{x_t-\sqrt{1-\overline{\alpha_{t}}}\epsilon_{0}}{\sqrt{\overline{\alpha_t}}}}{1-\overline{\alpha_{t}}}$$
+$$=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+(1-\alpha_{t})\frac{x_t-\sqrt{1-\overline{\alpha_{t}}}\epsilon_{0}}{\sqrt{{\alpha_t}}}}{1-\overline{\alpha_{t}}}$$
+$$=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}}{1-\overline{\alpha_{t}}}+\frac{(1-\alpha_{t})x_{t}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}-\frac{(1-\alpha_{t})\sqrt{1-\overline{\alpha_{t}}}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}\epsilon_{0}$$
+$$=(\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}+\frac{(1-\alpha_{t})}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}})x_t-\frac{(1-\alpha_{t})\sqrt{1-\overline{\alpha_{t}}}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}\epsilon_{0}$$
+$$=\frac{\alpha_{t}-\overline{\alpha_{t}}+1-\alpha_{t}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\epsilon_{0}$$
+$$=\frac{1-\overline{\alpha_{t}}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\epsilon_{0}$$
+$$=\frac{1}{\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\epsilon_{0}$$
+We use same trick to express estimated denoisising mean term by modelling $\mu_0$
+$$\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\hat{\epsilon_{\theta}}(x_t,t)$$
+Plug into the optimization term above:
+$$\displaystyle\argmin_{\theta} D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\frac{1}{\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\hat{\epsilon_{\theta}}(x_t,t)-\frac{1}{\sqrt{\alpha_t}}x_t+\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\epsilon_{0})||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}(\epsilon_{0}-\hat{\epsilon_{\theta}}(x_t,t))||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}\frac{(1-\alpha_{t})^2}{(1-\overline{\alpha_{t}}){\alpha_t}}[||\epsilon_{0}-\hat{\epsilon_{\theta}}(x_t,t)||^2_2]$$
+Notice we use a network $\hat{\epsilon_{\theta}}(x_t,t)$ to model source noise, which is equivalent to original image prediction. What if we ignore the whole prefix which include $\alpha$?
+$$L_{simple}=\displaystyle\argmin_\theta[||\epsilon_{0}-\hat{\epsilon_{\theta}}(x_t,t)||^2_2]$$
+This is equivalent to the objective of **Denoising Diffusion Probabilistic Models (DDPM)**, where the author propose to use a simple rescaled loss function that downplay the part where t is small. Although this is not equal to the original ELBO, but it performs surprising good when we use noise prediction scheme.
+
+DDPM training starts from a sampling of a time step between 0~T, we can generate corresponding noisy image at this time step. Then, we feed $x_t,t$ to the network to predict the source noise and take gradient decent steps until converge.
+
+During sampling, we sample a noise $x_T$ and use reverse process to get a clear image iteratively.
+$$p_\theta(x_{t-1}|x_{t}) = N(x_{t-1};\mu_\theta(x_t,t),\Sigma_\theta(x_t,t))$$
+$$x_{t-1} = \mu_\theta(x_t,t)+\sigma_t\epsilon$$
+$$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{1-\overline{\alpha_{t}}}\sqrt{\alpha_t}}\hat{\epsilon_{\theta}}(x_t,t)+\sigma_t\epsilon$$
+### Predict score function
+#### Tweedie’s Formula
+Tweedie’s Formula states exponential family distribution true mean = empirical mean + correction term.
+$$E[\mu_z|z]=z+\Sigma_z \nabla_z log p(z)$$
+According to, we can replace covariance.
+$$x_t=\sqrt{\overline{\alpha_t}}x_{0}+\sqrt{1-\overline{\alpha_{t}}}\epsilon_{0}$$
+$$E[\mu_{x_t}|x_t]=x_t+(1-\overline{\alpha_{i}})\nabla_{x_t} log p(x_t)$$
+We now have 2 equivalent expression of true mean value.
+$$\sqrt{\overline{\alpha_t}}x_{0}=x_t+(1-\overline{\alpha_{t}})\nabla log p(x_t)$$
+$$x_{0}=\frac{x_t+(1-\overline{\alpha_{t}})\nabla log p(x_t)}{\sqrt{\overline{\alpha_t}}}$$
+We then use the same trick to replace $x_0$ in the true transition mean.
+$$\mu_q(x_t,x_0)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})x_{0}}{1-\overline{\alpha_{t}}}$$
+$$\mu_q(x_t,x_0)=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+\sqrt{\overline{\alpha_{t-1}}}(1-\alpha_{t})\frac{x_t+(1-\overline{\alpha_{t}})\nabla log p(x_t)}{\sqrt{\overline{\alpha_t}}}}{1-\overline{\alpha_{t}}}$$
+$$=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}+(1-\alpha_{t})\frac{x_t+(1-\overline{\alpha_{t}})\nabla log p(x_t)}{\sqrt{{\alpha_t}}}}{1-\overline{\alpha_{t}}}$$
+$$=\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_{t}}{1-\overline{\alpha_{t}}}+\frac{(1-\alpha_{t})x_{t}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}+\frac{(1-\alpha_{t})(1-\overline{\alpha_{t}})\nabla log p(x_t)}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}$$
+$$=(\frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})}{1-\overline{\alpha_{t}}}+\frac{(1-\alpha_{t})}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}})x_t+\frac{(1-\alpha_{t})}{\sqrt{\alpha_t}}\nabla log p(x_t)$$
+$$=\frac{\alpha_{t}-\overline{\alpha_{t}}+1-\alpha_{t}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}x_t+\frac{(1-\alpha_{t})}{\sqrt{\alpha_t}}\nabla log p(x_t)$$
+$$=\frac{1-\overline{\alpha_{t}}}{(1-\overline{\alpha_{t}})\sqrt{\alpha_t}}x_t+\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}\nabla log p(x_t)$$
+$$=\frac{1}{\sqrt{\alpha_t}}x_t+\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}\nabla log p(x_t)$$
+Use the similar form to construct estimated denoising mean term 
+$$\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}x_t+\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}s_\theta(x_t,t)$$
+Same optimization term before and mean value comparison.
+$$\displaystyle\argmin_{\theta} D_{KL}(q(x_{t-1}|x_{t},x_0)||p_\theta(x_{t-1}|x_{t}))$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\mu_\theta-\mu_q)||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||(\frac{1}{\sqrt{\alpha_t}}x_t+\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}s_\theta(x_t,t)-\frac{1}{\sqrt{\alpha_t}}x_t-\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}\nabla log p(x_t))||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}[||\frac{1-\alpha_{t}}{\sqrt{\alpha_t}}(s_\theta(x_t,t)-\nabla log p(x_t))||^2_2]$$
+$$=\displaystyle\argmin_{\theta}\frac{1}{2\sigma^2_q(t)}\frac{(1-\alpha_{t})^2}{\alpha_t}[||s_\theta(x_t,t)-\nabla log p(x_t)||^2_2]$$
+$s_\theta(x_t,t)$ here is a neural network to predict **score function**, which is gradient of $x_t$. Notice the form is similar to the noise prediction form above, so we combine Tweedie’s Formula with reparameterization trick and get:
+$$\nabla log p(x_t)=-\frac{1}{\sqrt{1-\overline{\alpha_{t}}}}\epsilon_0$$
+which means optimizing score function equal to reverse noisy corruption. We have shown diffusion model have 3 equivalent optimization targets:
+
+Predict **original image $x_0$**
+
+Predict **source noise** $\epsilon_0$
+
+Predict **Score function $\nabla log p(x_t)$** at a random noise level
+# Improvements and Applications
+## Guidance
+## Faster Sampling
