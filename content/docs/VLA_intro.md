@@ -1,6 +1,6 @@
 +++
 title = 'MindVLA简介'
-date = 2025-5-30
+date = 2025-05-30
 draft = false
 tags = ["tech"]
 categories = ["tutorial"]
