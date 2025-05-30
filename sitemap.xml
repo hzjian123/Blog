@@ -2,28 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://hzjian123.github.io/Blog/categories/</loc>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://hzjian123.github.io/Blog/docs/</loc>
-    <lastmod>2023-12-25T21:24:45+08:00</lastmod>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://hzjian123.github.io/Blog/</loc>
-    <lastmod>2023-12-25T21:24:45+08:00</lastmod>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://hzjian123.github.io/Blog/docs/vla_intro/</loc>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://hzjian123.github.io/Blog/tags/</loc>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://hzjian123.github.io/Blog/tags/tech/</loc>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://hzjian123.github.io/Blog/categories/tutorial/</loc>
+    <lastmod>2025-05-30T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://hzjian123.github.io/Blog/docs/score-fun/</loc>
     <lastmod>2023-12-25T21:24:45+08:00</lastmod>
   </url><url>
-    <loc>https://hzjian123.github.io/Blog/categories/</loc>
-    <lastmod>2023-12-23T19:09:04+08:00</lastmod>
+    <loc>https://hzjian123.github.io/Blog/docs/test/</loc>
+    <lastmod>2023-12-25T21:24:45+08:00</lastmod>
   </url><url>
     <loc>https://hzjian123.github.io/Blog/docs/diffusion/</loc>
-    <lastmod>2023-12-23T19:09:04+08:00</lastmod>
-  </url><url>
-    <loc>https://hzjian123.github.io/Blog/tags/</loc>
-    <lastmod>2023-12-23T19:09:04+08:00</lastmod>
-  </url><url>
-    <loc>https://hzjian123.github.io/Blog/tags/tech/</loc>
-    <lastmod>2023-12-23T19:09:04+08:00</lastmod>
-  </url><url>
-    <loc>https://hzjian123.github.io/Blog/categories/tutorial/</loc>
     <lastmod>2023-12-23T19:09:04+08:00</lastmod>
   </url><url>
     <loc>https://hzjian123.github.io/Blog/archives/</loc>
